@@ -3,18 +3,35 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "br.com.zup.edu";
 option java_outer_classname = "KeyManagerGrpc";
-option objc_class_prefix = "HLW";
+
 
 package br.com.zup.edu;
 
-service KeyManagerGrpcService {
-  rpc send (KeyManagerGrpcRequest) returns (KeyManagerGrpcReply) {}
+service RegisterKeyGrpcService {
+  rpc register (RegisterKeyGrpcRequest) returns (RegisterKeyGrpcResponse) {}
 }
 
-message KeyManagerGrpcRequest {
-  string name = 1;
+enum KeyType{
+  UNKNOWN_KEY_TYPE = 0;
+  CPF =1;
+  CELLPHONE =2;
+  EMAIL=3;
+  RANDOM=4;
 }
 
-message KeyManagerGrpcReply {
-  string message = 1;
+enum AccountType{
+    UNKNOWN_ACCOUNT_TYPE = 0;
+    CONTA_CORRENTE = 1;
+    CONTA_POUPANCA = 2;
+}
+
+message RegisterKeyGrpcRequest {
+  string clientId = 1;
+  KeyType pixKeyType =2;
+  string  keyValue =3;
+  AccountType ClientAccountType = 4;
+}
+
+message RegisterKeyGrpcResponse {
+  string pixId = 1;
 }
