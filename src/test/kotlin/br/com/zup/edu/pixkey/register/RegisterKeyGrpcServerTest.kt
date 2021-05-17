@@ -82,7 +82,7 @@ internal class RegisterKeyGrpcServerTest(
     @Test //
     internal fun `deve cadastrar uma chave aleatoria`() {
         //cenario
-        val chaveRandom = ""
+
         val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
 
         val accountResponse = AccountDetailsResponse(
@@ -95,7 +95,6 @@ internal class RegisterKeyGrpcServerTest(
 
         val chamada = grpcClient.register(
             RegisterKeyGrpcRequest.newBuilder()
-                .setKeyValue(chaveRandom)
                 .setPixKeyType(KeyType.RANDOM)
                 .setClientId(idClient)
                 .setClientAccountType(AccountType.CONTA_CORRENTE)
@@ -224,6 +223,7 @@ internal class RegisterKeyGrpcServerTest(
         assertEquals("A chave pix theoalfonso78@gmail.com Já existe!", error.status.description)
         assertEquals(1, pixRepository.count())
     }
+
 
     @MockBean(ErpItauClientHttp::class)
     fun erpItau(): ErpItauClientHttp? {

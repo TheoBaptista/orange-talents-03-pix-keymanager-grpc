@@ -21,19 +21,19 @@ import javax.validation.constraints.Size
 data class RegisterKeyRequest(
     @field:NotBlank val clientId: String,
     @field:Size(max = 77) @field:NotBlank  val keyValue: String,
-    @field:NotNull val keyType: KeyType, // colocar essas mensagens centralizadas
+    @field:NotNull val keyType: KeyType,
     @field:NotNull val accountType: AccountType
 ) {
     companion object {
         fun convert(request: RegisterKeyGrpcRequest): RegisterKeyRequest {
             return RegisterKeyRequest(
                 clientId = request.clientId,
-                keyValue = if (request.pixKeyType.equals(KeyType.RANDOM)) UUID.randomUUID() // deve ter um teste if e o else
+                keyValue = if (request.pixKeyType.equals(KeyType.RANDOM)) UUID.randomUUID()
                     .toString() else request.keyValue,
-                keyType = if (request.pixKeyType.equals(KeyType.UNKNOWN_KEY_TYPE)) //deve ter um teste if else
+                keyType = if (request.pixKeyType.equals(KeyType.UNKNOWN_KEY_TYPE))
                            throw InvalidArgumentException("Tipo de chave Pix inválido")
                            else request.pixKeyType,
-                accountType = if (request.clientAccountType.equals(AccountType.UNKNOWN_ACCOUNT_TYPE)) // deve ter um teste if else
+                accountType = if (request.clientAccountType.equals(AccountType.UNKNOWN_ACCOUNT_TYPE))
                                throw InvalidArgumentException("Tipo de conta inválido")
                                else request.clientAccountType
             )

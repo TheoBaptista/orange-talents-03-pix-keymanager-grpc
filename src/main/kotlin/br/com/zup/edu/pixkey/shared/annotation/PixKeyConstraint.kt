@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 @Retention(AnnotationRetention.RUNTIME)
 @Constraint(validatedBy = [PixValidator::class])
 annotation class PixKey(
-    val message: String = "chave pix inválida",
+    val message: String = "Chave pix inválida",
     val groups: Array<KClass<Any>> = [],
     val payload: Array<KClass<Payload>> = [],
 )
@@ -29,23 +29,19 @@ class PixValidator : ConstraintValidator<PixKey, RegisterKeyRequest> {
         context: ConstraintValidatorContext
     ): Boolean {
 
-        // deve ter um teste aqui tambem
+
         if (value?.keyType == null) {
             return false
         }
 
-       // para cada opção do when deve ter um teste
+
        val result = when (value.keyType) {
             KeyType.CPF -> value.keyValue.matches("^[0-9]{11}\$".toRegex())
             KeyType.CELLPHONE -> value.keyValue.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
             KeyType.EMAIL -> value.keyValue.matches("^[A-Za-z0-9+_.-]+@(.+)\$".toRegex())
             KeyType.RANDOM -> true
             else -> throw InvalidArgumentException("O tipo da chave é inválido")
-        }
-
-
-        // deve ter um teste muito cuidado aqui!!!!
-        if(!result) throw InvalidArgumentException("Chave Pix inválida ${value.keyType} : ${value.keyValue}")
+       }
 
         return result
     }
