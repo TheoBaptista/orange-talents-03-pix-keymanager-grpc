@@ -12,12 +12,13 @@ import io.grpc.stub.StreamObserver
 import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 import javax.validation.Valid
 
 
 @Singleton
-@Validated
 @ErrorHandler
+@Validated
 class RegisterKeyGrpcServer(
     @Inject val erpItauClientHttpCall: ErpItauClientHttpCall,
     @Inject val pixRepository: PixRepository
@@ -26,17 +27,24 @@ class RegisterKeyGrpcServer(
 
     override fun register(
         request: RegisterKeyGrpcRequest,
-        responseObserver: StreamObserver<RegisterKeyGrpcResponse>
+        response: StreamObserver<RegisterKeyGrpcResponse>
     ) {
 
-        val novaChave = validateAndRegister(RegisterKeyRequest.convert(request))
-        responseObserver.onNext(RegisterKeyGrpcResponse.newBuilder().setPixId(novaChave.id).build())
-        responseObserver.onCompleted()
-    }
-    // cuidar com as restricoes de visibilidade com o valid nao usar private.
-    fun validateAndRegister(@Valid request: RegisterKeyRequest): Pix {
+        val requestDto = RegisterKeyRequest.convert(request)
+        val novaChave = registerKey(validate(requestDto))
+        response.onNext(
+            RegisterKeyGrpcResponse.newBuilder().setPixId(novaChave.id).setClientId(novaChave.clientId).build()
+        )
+        response.onCompleted()
 
-        if(pixRepository.existsByKeyValue(request.keyValue)) throw KeyAlreadyExistException("Chave Pix já existe : ${request.keyValue}")
+
+
+    }
+
+    @Transactional
+    private fun registerKey(request: RegisterKeyRequest,): Pix {
+
+        if (pixRepository.existsByKeyValue(request.keyValue)) throw KeyAlreadyExistException("A chave pix ${request.keyValue} Já existe!")
 
         return pixRepository.save(
             request.toModel(
@@ -46,6 +54,10 @@ class RegisterKeyGrpcServer(
                 )
             )
         )
+    }
+
+    fun validate(@Valid registerKeyRequest: RegisterKeyRequest): RegisterKeyRequest {
+        return registerKeyRequest
     }
 
 }

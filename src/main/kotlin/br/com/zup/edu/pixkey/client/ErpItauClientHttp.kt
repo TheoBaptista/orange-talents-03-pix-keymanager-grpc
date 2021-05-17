@@ -8,7 +8,7 @@ import io.micronaut.http.annotation.QueryValue
 import io.micronaut.http.client.annotation.Client
 
 
-@Client("http://localhost:9091")
+@Client("http://localhost:9091") // colocar variavel de ambiente
 interface ErpItauClientHttp {
 
     @Get("/api/v1/clientes/{id}/contas") // sempre importar o HttpResponse do micronaut senao vai dar erro

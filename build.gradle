@@ -48,6 +48,8 @@ dependencies {
 
     implementation("org.hibernate:hibernate-validator:6.1.6.Final")
 
+    testImplementation("org.mockito:mockito-all:1.10.19")
+
 }
 
 application {

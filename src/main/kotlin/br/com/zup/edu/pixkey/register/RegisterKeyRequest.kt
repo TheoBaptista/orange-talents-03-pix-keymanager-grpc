@@ -10,6 +10,7 @@ import br.com.zup.edu.pixkey.shared.PixKey
 import br.com.zup.edu.pixkey.shared.exceptions.InvalidArgumentException
 import io.micronaut.core.annotation.Introspected
 import java.util.*
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -27,17 +28,20 @@ data class RegisterKeyRequest(
         fun convert(request: RegisterKeyGrpcRequest): RegisterKeyRequest {
             return RegisterKeyRequest(
                 clientId = request.clientId,
-                keyValue = if (request.pixKeyType.equals(KeyType.RANDOM)) UUID.randomUUID()
+                keyValue = if (request.pixKeyType.equals(KeyType.RANDOM)) UUID.randomUUID() // deve ter um teste if e o else
                     .toString() else request.keyValue,
-                keyType = if (request.pixKeyType.equals(KeyType.UNKNOWN_KEY_TYPE))
+                keyType = if (request.pixKeyType.equals(KeyType.UNKNOWN_KEY_TYPE)) //deve ter um teste if else
                            throw InvalidArgumentException("Tipo de chave Pix inválido")
                            else request.pixKeyType,
-                accountType = if (request.clientAccountType.equals(AccountType.UNKNOWN_ACCOUNT_TYPE))
+                accountType = if (request.clientAccountType.equals(AccountType.UNKNOWN_ACCOUNT_TYPE)) // deve ter um teste if else
                                throw InvalidArgumentException("Tipo de conta inválido")
                                else request.clientAccountType
             )
         }
+
     }
+
+
 
     fun toModel(accountDetailsResponse: AccountDetailsResponse) : Pix{
         return Pix(keyType = this.keyType,keyValue = this.keyValue, accountType = this.accountType,accountDetailsResponse.toAccount(),

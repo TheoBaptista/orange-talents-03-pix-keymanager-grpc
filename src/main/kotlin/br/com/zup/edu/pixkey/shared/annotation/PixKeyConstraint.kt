@@ -29,11 +29,12 @@ class PixValidator : ConstraintValidator<PixKey, RegisterKeyRequest> {
         context: ConstraintValidatorContext
     ): Boolean {
 
+        // deve ter um teste aqui tambem
         if (value?.keyType == null) {
             return false
         }
 
-
+       // para cada opção do when deve ter um teste
        val result = when (value.keyType) {
             KeyType.CPF -> value.keyValue.matches("^[0-9]{11}\$".toRegex())
             KeyType.CELLPHONE -> value.keyValue.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
@@ -42,8 +43,8 @@ class PixValidator : ConstraintValidator<PixKey, RegisterKeyRequest> {
             else -> throw InvalidArgumentException("O tipo da chave é inválido")
         }
 
-        println("Eu estou aqui")
-        println(result)
+
+        // deve ter um teste muito cuidado aqui!!!!
         if(!result) throw InvalidArgumentException("Chave Pix inválida ${value.keyType} : ${value.keyValue}")
 
         return result
