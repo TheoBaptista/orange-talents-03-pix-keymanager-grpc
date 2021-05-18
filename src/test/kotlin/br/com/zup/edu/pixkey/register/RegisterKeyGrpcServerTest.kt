@@ -11,7 +11,6 @@ import br.com.zup.edu.pixkey.client.ErpItauClientHttp
 import br.com.zup.edu.pixkey.client.dto.AccountBankInstitutionResponse
 import br.com.zup.edu.pixkey.client.dto.AccountDetailsResponse
 import br.com.zup.edu.pixkey.client.dto.AccountOwnerResponse
-import br.com.zup.edu.pixkey.shared.PixValidator
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -234,7 +233,7 @@ internal class RegisterKeyGrpcServerTest(
     class client {
         @Singleton
         fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): RegisterKeyGrpcServiceGrpc.RegisterKeyGrpcServiceBlockingStub? {
-            return RegisterKeyGrpcServiceGrpc.newBlockingStub((channel))
+            return RegisterKeyGrpcServiceGrpc.newBlockingStub(channel)
         }
     }
 }

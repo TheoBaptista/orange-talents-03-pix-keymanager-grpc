@@ -11,6 +11,10 @@ service RegisterKeyGrpcService {
   rpc register (RegisterKeyGrpcRequest) returns (RegisterKeyGrpcResponse) {}
 }
 
+service DeleteKeyGrpcService {
+  rpc delete  (DeleteKeyGrpcRequest) returns (DeleteKeyGrpcResponse) {}
+}
+
 enum KeyType{
   UNKNOWN_KEY_TYPE = 0;
   CPF =1;
@@ -33,6 +37,16 @@ message RegisterKeyGrpcRequest {
 }
 
 message RegisterKeyGrpcResponse {
+  string pixId = 1;
+  string clientId =2;
+}
+
+message DeleteKeyGrpcRequest{
+  string pixId = 1;
+  string clientId =2;
+}
+
+message DeleteKeyGrpcResponse{
   string pixId = 1;
   string clientId =2;
 }

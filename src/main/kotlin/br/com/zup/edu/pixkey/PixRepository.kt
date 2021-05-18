@@ -5,5 +5,8 @@ import io.micronaut.data.jpa.repository.JpaRepository
 
 @Repository
 interface PixRepository : JpaRepository<Pix, String> {
-    fun existsByKeyValue(keyValue : String) : Boolean
+    fun existsByKeyValue(keyValue: String): Boolean
+
+    fun findByIdAndClientId(keyValue: String, clientId: String): Pix?
+
 }

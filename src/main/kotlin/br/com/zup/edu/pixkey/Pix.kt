@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
 @Entity
 class Pix(
     @field:NotNull @field:Enumerated(EnumType.STRING) val keyType: KeyType,
-    @field:Column(unique = true) val keyValue: String,
+    @field:Column(unique = true) val keyValue: String, // tratar possivel exceção
     @field:NotNull @field:Enumerated(EnumType.STRING) val accountType: AccountType,
     @field:Embedded val account: Account,
     @field:NotBlank val clientId: String,

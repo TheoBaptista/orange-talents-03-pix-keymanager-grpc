@@ -27,16 +27,16 @@ class RegisterKeyGrpcServer(
 
     override fun register(
         request: RegisterKeyGrpcRequest,
-        response: StreamObserver<RegisterKeyGrpcResponse>
+        responseObserver: StreamObserver<RegisterKeyGrpcResponse>
     ) {
+
 
         val requestDto = RegisterKeyRequest.convert(request)
         val novaChave = registerKey(validate(requestDto))
-        response.onNext(
+        responseObserver.onNext(
             RegisterKeyGrpcResponse.newBuilder().setPixId(novaChave.id).setClientId(novaChave.clientId).build()
         )
-        response.onCompleted()
-
+        responseObserver.onCompleted()
 
 
     }
