@@ -3,21 +3,42 @@ package br.com.zup.edu.pixkey
 import br.com.zup.edu.AccountType
 import br.com.zup.edu.KeyType
 import org.hibernate.annotations.GenericGenerator
+import java.time.LocalDateTime
 import javax.persistence.*
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 @Entity
 class Pix(
-    @field:NotNull @field:Enumerated(EnumType.STRING) val keyType: KeyType,
-    @field:Column(unique = true) val keyValue: String, // tratar possivel exceção
-    @field:NotNull @field:Enumerated(EnumType.STRING) val accountType: AccountType,
-    @field:Embedded val account: Account,
-    @field:NotBlank val clientId: String,
-    @field:NotBlank val cpf: String,
-    @field:NotBlank val name:String
+    @field:NotNull @field:Enumerated(EnumType.STRING) @Column(nullable = false) val keyType: KeyType,
+    @field:Column(unique = true, nullable = false) var keyValue: String, // tratar possivel exceção
+    @field:NotNull @field:Enumerated(EnumType.STRING) @Column(nullable = false) val accountType: AccountType,
+    @field:Embedded @field:Valid val account: Account,
+    @field:NotBlank @Column(nullable = false) val clientId: String,
+    @field:NotBlank @Column(nullable = false) val cpf: String,
+    @field:NotBlank @Column(nullable = false) val name: String
 ) {
-    @Id @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID",strategy = "org.hibernate.id.UUIDGenerator")
-     val id: String? = null // ver se tem outra alternativa
+    @Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    val id: String? = null // ver se tem outra alternativa
+
+    @Column(nullable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now()
+
+    fun updateRandomPixKey(randomUUID: String): Boolean{
+        if(this.keyType==KeyType.RANDOM){
+            this.keyValue=randomUUID
+            return true
+        }
+        return false
+    }
+
+    override fun toString(): String {
+        return "Pix(keyType=$keyType, keyValue='$keyValue', clientId='$clientId', name='$name', id=$id, createdAt=$createdAt)"
+    }
+
+
+
 }

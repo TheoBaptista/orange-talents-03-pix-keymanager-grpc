@@ -1,4 +1,4 @@
-package br.com.zup.edu.pixkey.client.dto
+package br.com.zup.edu.pixkey.client.itau.dto
 
 import br.com.zup.edu.AccountType
 import br.com.zup.edu.pixkey.Account
@@ -15,4 +15,7 @@ data class AccountDetailsResponse(
     fun toAccount(): Account {
         return Account(institution = instituicao.nome,instituicao.ispb,agencia,numero)
     }
+
+
+
 }

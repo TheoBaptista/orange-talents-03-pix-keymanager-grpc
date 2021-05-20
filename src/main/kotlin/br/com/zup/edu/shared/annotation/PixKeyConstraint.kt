@@ -2,7 +2,7 @@ package br.com.zup.edu.pixkey.shared
 
 import br.com.zup.edu.KeyType
 import br.com.zup.edu.pixkey.register.RegisterKeyRequest
-import br.com.zup.edu.pixkey.shared.exceptions.InvalidArgumentException
+import br.com.zup.edu.shared.exceptions.InvalidArgumentException
 import io.micronaut.core.annotation.AnnotationValue
 import io.micronaut.validation.validator.constraints.ConstraintValidator
 import io.micronaut.validation.validator.constraints.ConstraintValidatorContext

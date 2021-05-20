@@ -1,4 +1,4 @@
-package br.com.zup.edu.pixkey.client.dto
+package br.com.zup.edu.pixkey.client.itau.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

@@ -1,4 +1,4 @@
-package br.com.zup.edu.pixkey.shared.exceptions
+package br.com.zup.edu.shared.exceptions
 
 
 

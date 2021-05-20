@@ -4,9 +4,9 @@ import br.com.zup.edu.DeleteKeyGrpcRequest
 import br.com.zup.edu.DeleteKeyGrpcResponse
 import br.com.zup.edu.DeleteKeyGrpcServiceGrpc
 import br.com.zup.edu.pixkey.PixRepository
-import br.com.zup.edu.pixkey.shared.exceptions.ClientNotFoundException
-import br.com.zup.edu.pixkey.shared.exceptions.KeyNotFoundException
-import br.com.zup.edu.pixkey.shared.handle.ErrorHandler
+import br.com.zup.edu.pixkey.client.bcb.BancoCentralClientCall
+import br.com.zup.edu.shared.exceptions.KeyNotFoundException
+import br.com.zup.edu.shared.handle.ErrorHandler
 import io.grpc.stub.StreamObserver
 import io.micronaut.validation.Validated
 import javax.inject.Inject
@@ -16,7 +16,10 @@ import javax.transaction.Transactional
 @Singleton
 @Validated
 @ErrorHandler
-class DeleteKeyGrpcServer(@Inject val pixRepository: PixRepository) :
+class DeleteKeyGrpcServer(
+    @Inject val pixRepository: PixRepository,
+    @Inject val bancoCentralClientCall: BancoCentralClientCall
+    ) :
     DeleteKeyGrpcServiceGrpc.DeleteKeyGrpcServiceImplBase() {
 
     @Transactional
@@ -24,10 +27,12 @@ class DeleteKeyGrpcServer(@Inject val pixRepository: PixRepository) :
         request: DeleteKeyGrpcRequest,
         responseObserver: StreamObserver<DeleteKeyGrpcResponse>
     ) {
-        val chavePix =
-            pixRepository.findByIdAndClientId(request.pixId, request.clientId)
-                ?: throw KeyNotFoundException("Chave pix não encontrada ou a chave não pertence a esse cliente")
+
+        val chaveQueSeraDeletada = pixRepository.findByIdAndClientId(request.pixId, request.clientId)
+            ?: throw KeyNotFoundException("Chave pix não encontrada ou a chave não pertence a esse cliente")
         pixRepository.deleteById(request.pixId)
+
+        bancoCentralClientCall.deleteKeyPixBCB(chaveQueSeraDeletada)
 
         responseObserver.onNext(
             DeleteKeyGrpcResponse.newBuilder().setClientId(request.clientId).setPixId(request.pixId).build()

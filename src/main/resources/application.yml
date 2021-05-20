@@ -14,8 +14,12 @@ jpa.default.properties.hibernate.hbm2ddl.auto: create
 jpa.default.properties.hibernate.show_sql: true
 jpa.default.properties.hibernate.format_sql: true
 
-erp:
-  itau-url: ${ITAU_URL:`http://localhost:9091`}
+itau:
+  contas:
+        url:  ${ITAU_URL:`http://localhost:9091`}
+bcb:
+  pix:
+    url: ${BCB_URL:`http://localhost:8082`}
 
 logger:
   levels:

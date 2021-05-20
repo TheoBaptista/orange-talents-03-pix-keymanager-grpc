@@ -1,10 +1,10 @@
-package br.com.zup.edu.pixkey.shared.handle.handlers
+package br.com.zup.edu.shared.handle.handlers
 
 
-import br.com.zup.edu.pixkey.shared.exceptions.KeyNotFoundException
-import br.com.zup.edu.pixkey.shared.handle.ExceptionHandler
+import br.com.zup.edu.shared.exceptions.NotPermitedException
+import br.com.zup.edu.shared.handle.ExceptionHandler
+import br.com.zup.edu.shared.handle.ExceptionHandler.StatusWithDetails
 import io.grpc.Status
-import br.com.zup.edu.pixkey.shared.handle.ExceptionHandler.StatusWithDetails
 import javax.validation.ConstraintViolationException
 
 class DefaultExceptionHandler : ExceptionHandler<Exception> {
@@ -14,7 +14,7 @@ class DefaultExceptionHandler : ExceptionHandler<Exception> {
             is IllegalArgumentException -> Status.INVALID_ARGUMENT.withDescription(e.message)
             is IllegalStateException -> Status.FAILED_PRECONDITION.withDescription(e.message)
             is ConstraintViolationException -> Status.INVALID_ARGUMENT.withDescription(e.message)
-            is KeyNotFoundException -> Status.NOT_FOUND.withDescription(e.message)
+            is NotPermitedException -> Status.PERMISSION_DENIED.withDescription(e.message)
 
             else -> Status.UNKNOWN
         }

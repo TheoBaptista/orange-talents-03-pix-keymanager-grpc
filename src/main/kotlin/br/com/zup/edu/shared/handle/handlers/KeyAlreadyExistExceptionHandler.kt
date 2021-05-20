@@ -1,7 +1,7 @@
-package br.com.zup.edu.pixkey.shared.handle.handlers
+package br.com.zup.edu.shared.handle.handlers
 
-import br.com.zup.edu.pixkey.shared.exceptions.KeyAlreadyExistException
-import br.com.zup.edu.pixkey.shared.handle.ExceptionHandler
+import br.com.zup.edu.shared.exceptions.KeyAlreadyExistException
+import br.com.zup.edu.shared.handle.ExceptionHandler
 import io.grpc.Status
 import javax.inject.Singleton
 

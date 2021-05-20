@@ -25,6 +25,7 @@ micronaut {
 
 dependencies {
     annotationProcessor("io.micronaut.data:micronaut-data-processor")
+
     implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut.grpc:micronaut-grpc-runtime")
     implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
@@ -33,19 +34,23 @@ dependencies {
     implementation("javax.annotation:javax.annotation-api")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+    implementation("io.micronaut:micronaut-validation")
+    implementation("io.micronaut.xml:micronaut-jackson-xml")
+
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("org.postgresql:postgresql")
+
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:testcontainers")
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("com.h2database:h2")
-    implementation("io.micronaut:micronaut-validation")
+
 
     //http client micronaut
     implementation("io.micronaut:micronaut-http-client")
-
+    implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator")
     implementation("org.hibernate:hibernate-validator:6.1.6.Final")
 
     testImplementation("org.mockito:mockito-all:1.10.19")

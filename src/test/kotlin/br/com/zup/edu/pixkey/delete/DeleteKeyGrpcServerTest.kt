@@ -7,17 +7,20 @@ import br.com.zup.edu.KeyType
 import br.com.zup.edu.pixkey.Account
 import br.com.zup.edu.pixkey.Pix
 import br.com.zup.edu.pixkey.PixRepository
+import br.com.zup.edu.pixkey.client.bcb.BancoCentralClient
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
+import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,10 +30,15 @@ internal class DeleteKeyGrpcServerTest (val pixRepository: PixRepository,){
     @Inject
     lateinit var grpcClient: DeleteKeyGrpcServiceGrpc.DeleteKeyGrpcServiceBlockingStub
 
+    @Inject
+    lateinit var bcbClient: BancoCentralClient
+
     @BeforeEach
     fun setUp() {
         pixRepository.deleteAll()
     }
+
+    // Arrumar essa classe de teste, muito código
 
     @Test
     internal fun `deve deletar uma chave pix cadastrada no banco`() {
@@ -112,6 +120,11 @@ internal class DeleteKeyGrpcServerTest (val pixRepository: PixRepository,){
         assertEquals(1,pixRepository.count())
         assertTrue(pixRepository.existsByKeyValue("theoalfonso78@gmail.com"))
 
+    }
+
+    @MockBean(BancoCentralClient::class)
+    fun bcbClient(): BancoCentralClient? {
+        return Mockito.mock(BancoCentralClient::class.java)
     }
 
     @Factory

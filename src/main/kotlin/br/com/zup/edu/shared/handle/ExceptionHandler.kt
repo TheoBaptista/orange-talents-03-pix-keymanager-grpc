@@ -1,4 +1,4 @@
-package br.com.zup.edu.pixkey.shared.handle
+package br.com.zup.edu.shared.handle
 
 import io.grpc.Status
 import io.grpc.StatusRuntimeException

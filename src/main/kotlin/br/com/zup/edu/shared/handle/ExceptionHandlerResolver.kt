@@ -1,7 +1,7 @@
-package br.com.zup.edu.pixkey.shared.handle
+package br.com.zup.edu.shared.handle
 
 
-import br.com.zup.edu.pixkey.shared.handle.handlers.DefaultExceptionHandler
+import br.com.zup.edu.shared.handle.handlers.DefaultExceptionHandler
 import javax.inject.Inject
 
 import javax.inject.Singleton
