@@ -1,8 +1,7 @@
 package br.com.zup.edu.pixkey.shared
 
-import br.com.zup.edu.KeyType
+import br.com.zup.edu.pixkey.KeyTypePix
 import br.com.zup.edu.pixkey.register.RegisterKeyRequest
-import br.com.zup.edu.shared.exceptions.InvalidArgumentException
 import io.micronaut.core.annotation.AnnotationValue
 import io.micronaut.validation.validator.constraints.ConstraintValidator
 import io.micronaut.validation.validator.constraints.ConstraintValidatorContext
@@ -35,15 +34,12 @@ class PixValidator : ConstraintValidator<PixKey, RegisterKeyRequest> {
         }
 
 
-       val result = when (value.keyType) {
-            KeyType.CPF -> value.keyValue.matches("^[0-9]{11}\$".toRegex())
-            KeyType.CELLPHONE -> value.keyValue.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
-            KeyType.EMAIL -> value.keyValue.matches("^[A-Za-z0-9+_.-]+@(.+)\$".toRegex())
-            KeyType.RANDOM -> true
-            else -> throw InvalidArgumentException("O tipo da chave é inválido")
-       }
-
-        return result
+        return when (value.keyType) {
+             KeyTypePix.CPF -> value.keyValue.matches("^[0-9]{11}\$".toRegex())
+             KeyTypePix.CELLPHONE -> value.keyValue.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
+             KeyTypePix.EMAIL -> value.keyValue.matches("^[A-Za-z0-9+_.-]+@(.+)\$".toRegex())
+             KeyTypePix.RANDOM -> true
+        }
     }
 
 

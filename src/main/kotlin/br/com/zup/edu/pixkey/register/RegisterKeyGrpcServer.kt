@@ -23,8 +23,6 @@ class RegisterKeyGrpcServer(
         val requestDto = RegisterKeyRequest.convert(request)
         val novaChave = service.registerKey(requestDto)
 
-
-
         responseObserver.onNext(
             RegisterKeyGrpcResponse.newBuilder().setPixId(novaChave.id).setClientId(novaChave.clientId).build()
         )

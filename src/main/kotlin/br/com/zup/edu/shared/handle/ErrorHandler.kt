@@ -10,7 +10,6 @@ import kotlin.annotation.AnnotationTarget.TYPE
     CLASS,
     TYPE,
 )
-@Type(ExceptionHandlerInterceptor::class)
 @Retention(RUNTIME)
 @Around
 annotation class ErrorHandler()

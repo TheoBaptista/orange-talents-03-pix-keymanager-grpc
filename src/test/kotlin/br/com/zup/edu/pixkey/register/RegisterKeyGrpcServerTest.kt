@@ -1,19 +1,16 @@
 package br.com.zup.edu.pixkey.register
 
-import br.com.zup.edu.AccountType
 import br.com.zup.edu.KeyType
 import br.com.zup.edu.RegisterKeyGrpcRequest
 import br.com.zup.edu.RegisterKeyGrpcServiceGrpc
-import br.com.zup.edu.pixkey.Account
-import br.com.zup.edu.pixkey.Pix
-import br.com.zup.edu.pixkey.PixRepository
+import br.com.zup.edu.pixkey.*
+import br.com.zup.edu.pixkey.AccountType
 import br.com.zup.edu.pixkey.client.bcb.BancoCentralClient
 import br.com.zup.edu.pixkey.client.bcb.dto.*
 import br.com.zup.edu.pixkey.client.itau.ErpItauClient
 import br.com.zup.edu.pixkey.client.itau.dto.AccountBankInstitutionResponse
 import br.com.zup.edu.pixkey.client.itau.dto.AccountDetailsResponse
 import br.com.zup.edu.pixkey.client.itau.dto.AccountOwnerResponse
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.HttpResponseException
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -21,7 +18,6 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -30,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.time.LocalDateTime
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,7 +64,7 @@ internal class RegisterKeyGrpcServerTest(
             bcbClient.register(
                 createBcBPixRequest(
                     Pix(
-                        KeyType.CPF, "84987668009", AccountType.CONTA_CORRENTE,
+                        KeyTypePix.CPF, "84987668009", AccountType.CONTA_CORRENTE,
                         Account("Itau", "123465", "01", "10"), "0102f3d0-c211-436b-a3e9-da7c94441d29", chaveCpf, "João"
                     )
                 )
@@ -94,9 +89,9 @@ internal class RegisterKeyGrpcServerTest(
         val chamada = grpcClient.register(
             RegisterKeyGrpcRequest.newBuilder()
                 .setKeyValue(chaveCpf)
-                .setPixKeyType(KeyType.CPF)
+                .setKeyType(KeyType.CPF)
                 .setClientId(idClient)
-                .setClientAccountType(AccountType.CONTA_CORRENTE)
+                .setClientAccountType(br.com.zup.edu.AccountType.CONTA_CORRENTE)
                 .build()
         )
 
@@ -129,8 +124,8 @@ internal class RegisterKeyGrpcServerTest(
             bcbClient.register(
                 createBcBPixRequest(
                     Pix(
-                        KeyType.RANDOM,
-                        KeyType.RANDOM.toString(),
+                        KeyTypePix.RANDOM,
+                        KeyTypePix.RANDOM.toString(),
                         AccountType.CONTA_CORRENTE,
                         Account("Itau", "123465", "01", "10"),
                         "0102f3d0-c211-436b-a3e9-da7c94441d29",
@@ -157,9 +152,9 @@ internal class RegisterKeyGrpcServerTest(
 
         val chamada = grpcClient.register(
             RegisterKeyGrpcRequest.newBuilder()
-                .setPixKeyType(KeyType.RANDOM)
+                .setKeyType(KeyType.RANDOM)
                 .setClientId(idClient)
-                .setClientAccountType(AccountType.CONTA_CORRENTE)
+                .setClientAccountType(br.com.zup.edu.AccountType.CONTA_CORRENTE)
                 .build()
         )
         // validacao
@@ -193,16 +188,16 @@ internal class RegisterKeyGrpcServerTest(
 
         val request = RegisterKeyGrpcRequest.newBuilder()
             .setKeyValue(chaveRandom)
-            .setPixKeyType(KeyType.UNKNOWN_KEY_TYPE)
+            .setKeyType(KeyType.UNKNOWN_KEY_TYPE)
             .setClientId(idClient)
-            .setClientAccountType(AccountType.CONTA_CORRENTE)
+            .setClientAccountType(br.com.zup.edu.AccountType.CONTA_CORRENTE)
             .build()
 
         val request2 = RegisterKeyGrpcRequest.newBuilder()
             .setKeyValue(chaveRandom)
-            .setPixKeyType(KeyType.RANDOM)
+            .setKeyType(KeyType.RANDOM)
             .setClientId(idClient)
-            .setClientAccountType(AccountType.UNKNOWN_ACCOUNT_TYPE)
+            .setClientAccountType(br.com.zup.edu.AccountType.UNKNOWN_ACCOUNT_TYPE)
             .build()
 
         val error = assertThrows(StatusRuntimeException::class.java) {
@@ -218,7 +213,7 @@ internal class RegisterKeyGrpcServerTest(
         assertEquals("Tipo de chave Pix inválido", error.status.description)
 
         assertEquals(Status.INVALID_ARGUMENT.code, error2.status.code)
-        assertEquals("Tipo de conta inválido", error2.status.description)
+        assertEquals("Tipo de conta inválida", error2.status.description)
         assertEquals(0, pixRepository.count())
 
     }
@@ -234,9 +229,9 @@ internal class RegisterKeyGrpcServerTest(
         //acao
         val request = RegisterKeyGrpcRequest.newBuilder()
             .setKeyValue(chave)
-            .setPixKeyType(KeyType.EMAIL)
+            .setKeyType(KeyType.EMAIL)
             .setClientId(idClient)
-            .setClientAccountType(AccountType.CONTA_POUPANCA)
+            .setClientAccountType(br.com.zup.edu.AccountType.CONTA_POUPANCA)
             .build()
 
         //validacao
@@ -258,9 +253,9 @@ internal class RegisterKeyGrpcServerTest(
         //cenario
         pixRepository.save(
             Pix(
-                KeyType.EMAIL,
+                KeyTypePix.EMAIL,
                 "theoalfonso78@gmail.com",
-                AccountType.CONTA_POUPANCA,
+                AccountType.CONTA_CORRENTE,
                 Account("Itau", "12345", "001", "001"),
                 "0102f3d0-c211-436b-a3e9-da7c94441d29",
                 "0132323223",
@@ -271,9 +266,9 @@ internal class RegisterKeyGrpcServerTest(
         // acao
         val request = RegisterKeyGrpcRequest.newBuilder()
             .setKeyValue("theoalfonso78@gmail.com")
-            .setPixKeyType(KeyType.EMAIL)
+            .setKeyType(KeyType.EMAIL)
             .setClientId("0102f3d0-c211-436b-a3e9-da7c94441d29")
-            .setClientAccountType(AccountType.CONTA_POUPANCA)
+            .setClientAccountType(br.com.zup.edu.AccountType.CONTA_POUPANCA)
             .build()
 
         // validacao
@@ -302,8 +297,8 @@ internal class RegisterKeyGrpcServerTest(
             bcbClient.register(
                 createBcBPixRequest(
                     Pix(
-                        KeyType.RANDOM,
-                        KeyType.RANDOM.toString(),
+                        KeyTypePix.RANDOM,
+                        KeyTypePix.RANDOM.toString(),
                         AccountType.CONTA_CORRENTE,
                         Account("Itau", "123465", "01", "10"),
                         "0102f3d0-c211-436b-a3e9-da7c94441d29",
@@ -316,9 +311,9 @@ internal class RegisterKeyGrpcServerTest(
         // acao
 
         val request = RegisterKeyGrpcRequest.newBuilder()
-            .setPixKeyType(KeyType.RANDOM)
+            .setKeyType(KeyType.RANDOM)
             .setClientId(idClient)
-            .setClientAccountType(AccountType.CONTA_CORRENTE)
+            .setClientAccountType(br.com.zup.edu.AccountType.CONTA_CORRENTE)
             .build()
 
         val error = assertThrows(StatusRuntimeException::class.java) {

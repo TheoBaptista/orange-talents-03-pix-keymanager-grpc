@@ -3,6 +3,7 @@ package br.com.zup.edu.shared.handle
 
 import io.grpc.BindableService
 import io.grpc.stub.StreamObserver
+import io.micronaut.aop.InterceptorBean
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import javax.inject.Inject
@@ -10,6 +11,7 @@ import javax.inject.Singleton
 
 
 @Singleton
+@InterceptorBean(ErrorHandler::class)
 class ExceptionHandlerInterceptor(@Inject private val resolver: ExceptionHandlerResolver) :
     MethodInterceptor<BindableService, Any?> {
 

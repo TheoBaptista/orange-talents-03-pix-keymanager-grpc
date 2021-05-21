@@ -1,7 +1,7 @@
 package br.com.zup.edu.pixkey.client.itau.dto
 
-import br.com.zup.edu.AccountType
 import br.com.zup.edu.pixkey.Account
+import br.com.zup.edu.pixkey.AccountType
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class AccountDetailsResponse(

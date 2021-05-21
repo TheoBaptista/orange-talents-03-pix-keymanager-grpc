@@ -1,13 +1,12 @@
 package br.com.zup.edu.pixkey.client.bcb.dto
 
-import br.com.zup.edu.KeyType
+import br.com.zup.edu.pixkey.KeyTypePix
 import br.com.zup.edu.pixkey.Pix
 import java.time.LocalDateTime
 import javax.validation.Valid
-import br.com.zup.edu.AccountType as TipoDaConta
 
 data class CreatePixKeyRequest(
-    val keyType: KeyType,
+    val keyType: KeyTypePix,
     val key: String,
     val bankAccount: BankAccount,
     val owner: Owner
@@ -39,11 +38,10 @@ enum class AccountType() {
     SVGS;
 
     companion object {
-        fun convert(tipoDaConta: TipoDaConta): AccountType {
+        fun convert(tipoDaConta: br.com.zup.edu.pixkey.AccountType): AccountType {
             return when (tipoDaConta) {
-                TipoDaConta.CONTA_CORRENTE -> CACC
-                TipoDaConta.CONTA_POUPANCA -> SVGS
-                else -> throw IllegalArgumentException("Tipo de conta inválido")
+                br.com.zup.edu.pixkey.AccountType.CONTA_CORRENTE -> CACC
+                br.com.zup.edu.pixkey.AccountType.CONTA_POUPANCA -> SVGS
             }
         }
     }

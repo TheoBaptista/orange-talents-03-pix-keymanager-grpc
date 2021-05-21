@@ -37,7 +37,7 @@ class RegisterKeyService(
                 )
             )
         )
-        val response = bancoCentralClientCall.createKeyPixBCB(chaveCriada)
+        bancoCentralClientCall.createKeyPixBCB(chaveCriada)
         return chaveCriada
     }
 
