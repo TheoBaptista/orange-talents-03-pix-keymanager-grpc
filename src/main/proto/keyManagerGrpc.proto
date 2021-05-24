@@ -20,6 +20,10 @@ service LoadKeyGrpcService{
   rpc load(LoadKeyRequest) returns (LoadKeyResponse){}
 }
 
+service ListAllKeysGrpcService{
+  rpc listAll(ListAllRequest) returns(ListAllResponse){}
+}
+
 enum KeyType{
   UNKNOWN_KEY_TYPE = 0;
   CPF = 1;
@@ -91,3 +95,19 @@ message LoadKeyResponse{
     string pixId     = 2;
     PixKey key   = 3;
 }
+
+message ListAllRequest {
+  string clientId = 1;
+}
+message ListAllResponse{
+
+  message PixKey{
+    string pixId = 1;
+    KeyType type = 2;
+    string key = 3;
+    AccountType accountType = 4;
+    google.protobuf.Timestamp createdAt = 5;
+  }
+  string clientId = 1;
+  repeated PixKey keys= 2;
+  }

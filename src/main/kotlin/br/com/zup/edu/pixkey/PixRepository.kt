@@ -12,4 +12,6 @@ interface PixRepository : JpaRepository<Pix, String> {
 
     fun findByKeyValue(keyValue: String): Optional<Pix>
 
+    fun findAllByClientId(clientId: String): List<Pix>
+
 }

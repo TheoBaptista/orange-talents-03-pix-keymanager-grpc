@@ -24,6 +24,8 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -42,6 +44,11 @@ internal class RegisterKeyGrpcServerTest(
     @Inject
     lateinit var grpcClient: RegisterKeyGrpcServiceGrpc.RegisterKeyGrpcServiceBlockingStub
 
+    private val accountResponse = AccountDetailsResponse(
+        AccountType.CONTA_CORRENTE, AccountBankInstitutionResponse("Itau", "123465"), "01", "10",
+        AccountOwnerResponse("0102f3d0-c211-436b-a3e9-da7c94441d29", "João", cpf = "84987668009")
+    )
+
     @BeforeEach
     internal fun setUp() {
         pixRepository.deleteAll()
@@ -50,30 +57,28 @@ internal class RegisterKeyGrpcServerTest(
     @Test
     internal fun `deve registrar chave pix do tipo cpf`() {
         //cenario
-        val chaveCpf = "84987668009"
-        val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+        val chave = "84987668009"
+        val clientId = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+        val tipoDaChave = KeyTypePix.CPF
 
-        val accountResponse = AccountDetailsResponse(
-            AccountType.CONTA_CORRENTE, AccountBankInstitutionResponse("Itau", "123465"), "01", "10",
-            AccountOwnerResponse("0102f3d0-c211-436b-a3e9-da7c94441d29", "João", chaveCpf)
-        )
-        Mockito.`when`(erpItau.searchAccountDetails(idClient, "CONTA_CORRENTE"))
-            .thenReturn(HttpResponse.ok(accountResponse))
+        val accountResponse =
+            Mockito.`when`(erpItau.searchAccountDetails(clientId, "CONTA_CORRENTE"))
+                .thenReturn(HttpResponse.ok(accountResponse))
 
         Mockito.`when`(
             bcbClient.register(
                 createBcBPixRequest(
                     Pix(
-                        KeyTypePix.CPF, "84987668009", AccountType.CONTA_CORRENTE,
-                        Account("Itau", "123465", "01", "10"), "0102f3d0-c211-436b-a3e9-da7c94441d29", chaveCpf, "João"
+                        tipoDaChave, "84987668009", AccountType.CONTA_CORRENTE,
+                        Account("Itau", "123465", "01", "10"), "0102f3d0-c211-436b-a3e9-da7c94441d29", cpf = "84987668009", "João"
                     )
                 )
             )
         ).thenReturn(
             HttpResponse.created(
                 CreatePixKeyResponse(
-                    "CPF",
-                    chaveCpf,
+                    tipoDaChave.name,
+                    chave,
                     BankAccount(
                         accountNumber = "10",
                         accountType = br.com.zup.edu.pixkey.client.bcb.dto.AccountType.CACC
@@ -88,17 +93,17 @@ internal class RegisterKeyGrpcServerTest(
 
         val chamada = grpcClient.register(
             RegisterKeyGrpcRequest.newBuilder()
-                .setKeyValue(chaveCpf)
+                .setKeyValue(chave)
                 .setKeyType(KeyType.CPF)
-                .setClientId(idClient)
+                .setClientId(clientId)
                 .setClientAccountType(br.com.zup.edu.AccountType.CONTA_CORRENTE)
                 .build()
         )
 
         // validacao
         with(pixRepository) {
-            assertTrue(existsByKeyValue(chaveCpf))
-            assertEquals(idClient, chamada.clientId)
+            assertTrue(existsByKeyValue(chave))
+            assertEquals(clientId, chamada.clientId)
             assertEquals(1, pixRepository.count())
 
         }
@@ -106,17 +111,125 @@ internal class RegisterKeyGrpcServerTest(
 
     }
 
+    @Test
+    internal fun `deve registrar chave pix do tipo email`() {
+        //cenario
+        val chave = "joao.santos@joao.com.br"
+        val clientId = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+        val tipoDaChave = KeyTypePix.EMAIL
+
+        Mockito.`when`(erpItau.searchAccountDetails(clientId, "CONTA_CORRENTE"))
+            .thenReturn(HttpResponse.ok(accountResponse))
+
+        Mockito.`when`(
+            bcbClient.register(
+                createBcBPixRequest(
+                    Pix(
+                        tipoDaChave, chave, AccountType.CONTA_CORRENTE,
+                        Account("Itau", "123465", "01", "10"), clientId, cpf = "84987668009", "João"
+                    )
+                )
+            )
+        ).thenReturn(
+            HttpResponse.created(
+                CreatePixKeyResponse(
+                    tipoDaChave.name,
+                    chave,
+                    BankAccount(
+                        accountNumber = "10",
+                        accountType = br.com.zup.edu.pixkey.client.bcb.dto.AccountType.CACC
+                    ),
+                    Owner(OwnerType.NATURAL_PERSON, "João", "84987668009"),
+                    LocalDateTime.now()
+
+                )
+            )
+        )
+        // acao
+
+        val chamada = grpcClient.register(
+            RegisterKeyGrpcRequest.newBuilder()
+                .setKeyValue(chave)
+                .setKeyType(KeyType.EMAIL)
+                .setClientId(clientId)
+                .setClientAccountType(br.com.zup.edu.AccountType.CONTA_CORRENTE)
+                .build()
+        )
+
+        // validacao
+        with(pixRepository) {
+            assertTrue(existsByKeyValue(chave))
+            assertEquals(clientId, chamada.clientId)
+            assertEquals(1, pixRepository.count())
+
+        }
+
+
+    }
+
+    @Test
+    internal fun `deve registrar chave pix do tipo celular`() {
+        //cenario
+        val chave = "+5551990237788"
+        val clientId = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+        val tipoDaChave = KeyTypePix.CELLPHONE
+
+        Mockito.`when`(erpItau.searchAccountDetails(clientId, "CONTA_CORRENTE"))
+            .thenReturn(HttpResponse.ok(accountResponse))
+
+        Mockito.`when`(
+            bcbClient.register(
+                createBcBPixRequest(
+                    Pix(
+                        tipoDaChave, chave, AccountType.CONTA_CORRENTE,
+                        Account("Itau", "123465", "01", "10"), clientId, cpf ="84987668009", "João"
+                    )
+                )
+            )
+        ).thenReturn(
+            HttpResponse.created(
+                CreatePixKeyResponse(
+                    tipoDaChave.name,
+                    chave,
+                    BankAccount(
+                        accountNumber = "10",
+                        accountType = br.com.zup.edu.pixkey.client.bcb.dto.AccountType.CACC
+                    ),
+                    Owner(OwnerType.NATURAL_PERSON, "João", "84987668009"),
+                    LocalDateTime.now()
+
+                )
+            )
+        )
+        // acao
+
+        val chamada = grpcClient.register(
+            RegisterKeyGrpcRequest.newBuilder()
+                .setKeyValue(chave)
+                .setKeyType(KeyType.CELLPHONE)
+                .setClientId(clientId)
+                .setClientAccountType(br.com.zup.edu.AccountType.CONTA_CORRENTE)
+                .build()
+        )
+
+        // validacao
+        with(pixRepository) {
+            assertTrue(existsByKeyValue(chave))
+            assertEquals(clientId, chamada.clientId)
+            assertEquals(1, pixRepository.count())
+
+        }
+
+
+    }
 
     @Test //
-    internal fun `deve cadastrar uma chave aleatoria`() {
+    internal fun `deve registar chave pix do tipo aleatoria`() {
         //cenario
 
         val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+        val tipoDaChave = KeyTypePix.RANDOM
 
-        val accountResponse = AccountDetailsResponse(
-            AccountType.CONTA_CORRENTE, AccountBankInstitutionResponse("Itau", "123465"), "01", "10",
-            AccountOwnerResponse("0102f3d0-c211-436b-a3e9-da7c94441d29", "João", "25738449002")
-        )
         Mockito.`when`(erpItau.searchAccountDetails(idClient, "CONTA_CORRENTE"))
             .thenReturn(HttpResponse.ok(accountResponse))
 
@@ -124,12 +237,12 @@ internal class RegisterKeyGrpcServerTest(
             bcbClient.register(
                 createBcBPixRequest(
                     Pix(
-                        KeyTypePix.RANDOM,
-                        KeyTypePix.RANDOM.toString(),
+                        tipoDaChave,
+                        tipoDaChave.name,
                         AccountType.CONTA_CORRENTE,
                         Account("Itau", "123465", "01", "10"),
-                        "0102f3d0-c211-436b-a3e9-da7c94441d29",
-                        "25738449002",
+                        idClient,
+                        "84987668009",
                         "João"
                     )
                 )
@@ -137,13 +250,13 @@ internal class RegisterKeyGrpcServerTest(
         ).thenReturn(
             HttpResponse.created(
                 CreatePixKeyResponse(
-                    "RANDOM",
+                    tipoDaChave.name,
                     "0102f3d0-c211-436b-a3e9-da7c94441d29",
                     BankAccount(
                         accountNumber = "10",
                         accountType = br.com.zup.edu.pixkey.client.bcb.dto.AccountType.CACC
                     ),
-                    Owner(OwnerType.NATURAL_PERSON, "João", "25738449002"),
+                    Owner(OwnerType.NATURAL_PERSON, "João", "84987668009"),
                     LocalDateTime.now()
                 )
             )
@@ -177,15 +290,9 @@ internal class RegisterKeyGrpcServerTest(
         val chaveRandom = ""
         val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
 
-        val accountResponse = AccountDetailsResponse(
-            AccountType.CONTA_CORRENTE, AccountBankInstitutionResponse("Itau", "123465"), "01", "10",
-            AccountOwnerResponse("0102f3d0-c211-436b-a3e9-da7c94441d29", "João", "25738449002")
-        )
         Mockito.`when`(erpItau.searchAccountDetails(idClient, "CONTA_CORRENTE"))
             .thenReturn(HttpResponse.ok(accountResponse))
         // acao
-
-
         val request = RegisterKeyGrpcRequest.newBuilder()
             .setKeyValue(chaveRandom)
             .setKeyType(KeyType.UNKNOWN_KEY_TYPE)
@@ -219,7 +326,7 @@ internal class RegisterKeyGrpcServerTest(
     }
 
     @Test
-    internal fun `deve retornar erro not found ao consultar o erp itau`() {
+    internal fun `nao deve registrar chave e deve retornar erro not found ao consultar o erp itau com um client id invalido`() {
         //cenario
         val chave = "theoalfonso78@gmail.com"
         val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
@@ -248,7 +355,7 @@ internal class RegisterKeyGrpcServerTest(
     }
 
     @Test
-    internal fun `deve retornar erro de already created ao tentar cadastrar uma chave que ja foi cadastrada`() {
+    internal fun `nao deve registrar chave e deve retornar erro de already created ao tentar cadastrar uma chave que ja foi cadastrada`() {
 
         //cenario
         pixRepository.save(
@@ -282,7 +389,7 @@ internal class RegisterKeyGrpcServerTest(
     }
 
     @Test
-    internal fun `deve retornar erro ao chamar o client http do bcb`() {
+    internal fun `nao deve registrar chave e deve retornar erro ao chamar o client http do bcb`() {
 
         val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
 
@@ -319,33 +426,94 @@ internal class RegisterKeyGrpcServerTest(
         val error = assertThrows(StatusRuntimeException::class.java) {
             grpcClient.register(request)
         }
+        // validacao
+        assertEquals(Status.FAILED_PRECONDITION.code, error.status.code)
+        assertEquals("Erro ao registrar chave Pix no Banco Central do Brasil (BCB)", error.status.description)
+        assertEquals(0, pixRepository.count())
 
-
-
-    // validacao
-
-    assertEquals(Status.FAILED_PRECONDITION.code, error.status.code)
-    assertEquals("Erro ao registrar chave Pix no Banco Central do Brasil (BCB)", error.status.description)
-    assertEquals(0, pixRepository.count())
-
-}
-
-
-@MockBean(ErpItauClient::class)
-fun erpItau(): ErpItauClient? {
-    return Mockito.mock(ErpItauClient::class.java)
-}
-
-@MockBean(BancoCentralClient::class)
-fun bcbClient(): BancoCentralClient? {
-    return Mockito.mock(BancoCentralClient::class.java)
-}
-
-@Factory
-class client {
-    @Singleton
-    fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): RegisterKeyGrpcServiceGrpc.RegisterKeyGrpcServiceBlockingStub? {
-        return RegisterKeyGrpcServiceGrpc.newBlockingStub(channel)
     }
-}
+
+    @ParameterizedTest
+    @ValueSource(strings = ["011320840145","0564209901","15151132321231564987","1"])
+    internal fun `nao deve registrar chave pix ao passar uma chave invalida do tipo cpf`(chave:String) {
+       //cenario
+        val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+       //acao
+        val request = RegisterKeyGrpcRequest.newBuilder()
+            .setKeyType(KeyType.CPF)
+            .setKeyValue(chave)
+            .setClientId(idClient)
+            .setClientAccountType(br.com.zup.edu.AccountType.CONTA_POUPANCA)
+            .build()
+
+        val error = assertThrows(StatusRuntimeException::class.java) {
+            grpcClient.register(request)
+        }
+        //validacao
+        assertEquals(Status.INVALID_ARGUMENT.code, error.status.code)
+        assertEquals("registerKey.request: Chave pix inválida", error.status.description)
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["+5551910254646445463778","+12","55519102377","519102377"])
+    internal fun `nao deve registrar chave pix ao passar uma chave invalida do tipo celular`(chave:String) {
+        //cenario
+        val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+        //acao
+        val request = RegisterKeyGrpcRequest.newBuilder()
+            .setKeyType(KeyType.CELLPHONE)
+            .setKeyValue(chave)
+            .setClientId(idClient)
+            .setClientAccountType(br.com.zup.edu.AccountType.CONTA_POUPANCA)
+            .build()
+
+        val error = assertThrows(StatusRuntimeException::class.java) {
+            grpcClient.register(request)
+        }
+        //validacao
+        assertEquals(Status.INVALID_ARGUMENT.code, error.status.code)
+        assertEquals("registerKey.request: Chave pix inválida", error.status.description)
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["joao.com.br","alberto@","@joao.com,br","bento"])
+    internal fun `nao deve registrar chave pix ao passar uma chave invalida do tipo email`(chave:String) {
+        //cenario
+        val idClient = "0102f3d0-c211-436b-a3e9-da7c94441d29"
+        //acao
+        val request = RegisterKeyGrpcRequest.newBuilder()
+            .setKeyType(KeyType.EMAIL)
+            .setKeyValue(chave)
+            .setClientId(idClient)
+            .setClientAccountType(br.com.zup.edu.AccountType.CONTA_POUPANCA)
+            .build()
+
+        val error = assertThrows(StatusRuntimeException::class.java) {
+            grpcClient.register(request)
+        }
+        //validacao
+        assertEquals(Status.INVALID_ARGUMENT.code, error.status.code)
+        assertEquals("registerKey.request: Chave pix inválida", error.status.description)
+
+    }
+
+    @MockBean(ErpItauClient::class)
+    fun erpItau(): ErpItauClient? {
+        return Mockito.mock(ErpItauClient::class.java)
+    }
+
+    @MockBean(BancoCentralClient::class)
+    fun bcbClient(): BancoCentralClient? {
+        return Mockito.mock(BancoCentralClient::class.java)
+    }
+
+    @Factory
+    class client {
+        @Singleton
+        fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): RegisterKeyGrpcServiceGrpc.RegisterKeyGrpcServiceBlockingStub? {
+            return RegisterKeyGrpcServiceGrpc.newBlockingStub(channel)
+        }
+    }
 }

@@ -4,12 +4,14 @@ import br.com.zup.edu.DeleteKeyGrpcRequest
 import br.com.zup.edu.DeleteKeyGrpcServiceGrpc
 import br.com.zup.edu.pixkey.*
 import br.com.zup.edu.pixkey.client.bcb.BancoCentralClient
+import br.com.zup.edu.pixkey.client.bcb.dto.DeletePixKeyRequest
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions
@@ -121,6 +123,42 @@ internal class DeleteKeyGrpcServerTest(val pixRepository: PixRepository) {
 
         assertEquals(Status.NOT_FOUND.code, error.status.code)
         assertEquals("Chave pix não encontrada ou a chave não pertence a esse cliente", error.status.description)
+        assertEquals(1, pixRepository.count())
+        assertTrue(pixRepository.existsByKeyValue("theoalfonso78@gmail.com"))
+
+    }
+
+    @Test
+    internal fun `nao deve deletar ao dar erro ao chamar o client bcb`() {
+        //cenario
+        val chaveCadastrada = pixRepository.save(
+            Pix(
+                KeyTypePix.EMAIL,
+                "theoalfonso78@gmail.com",
+                AccountType.CONTA_CORRENTE,
+                Account("Itau", "12345", "001", "001"),
+                "0102f3d0-c211-436b-a3e9-da7c94441d29",
+                "0132323223",
+                "João"
+            )
+        )
+
+
+
+        Mockito.`when`(bcbClient.delete(chaveCadastrada.keyValue, DeletePixKeyRequest(chaveCadastrada.keyValue))).thenThrow(
+            HttpClientResponseException::class.java)
+
+       // acao
+        val error = Assertions.assertThrows(StatusRuntimeException::class.java) {
+            grpcClient.delete(
+                DeleteKeyGrpcRequest.newBuilder().setClientId(chaveCadastrada.clientId)
+                    .setPixId(chaveCadastrada.id).build()
+            )
+        }
+
+        //validacao
+        assertEquals(Status.FAILED_PRECONDITION.code, error.status.code)
+        assertEquals("Erro ao deletar a chave Pix no Banco Central do Brasil (BCB)", error.status.description)
         assertEquals(1, pixRepository.count())
         assertTrue(pixRepository.existsByKeyValue("theoalfonso78@gmail.com"))
 

@@ -8,7 +8,9 @@ import br.com.zup.edu.pixkey.client.bcb.BancoCentralClientCall
 import br.com.zup.edu.shared.exceptions.KeyNotFoundException
 import br.com.zup.edu.shared.handle.ErrorHandler
 import io.grpc.stub.StreamObserver
+import io.micronaut.transaction.SynchronousTransactionManager
 import io.micronaut.validation.Validated
+import java.sql.Connection
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -18,21 +20,26 @@ import javax.transaction.Transactional
 @ErrorHandler
 class DeleteKeyGrpcServer(
     @Inject val pixRepository: PixRepository,
+    @Inject val transactionManager: SynchronousTransactionManager<Connection>,
     @Inject val bancoCentralClientCall: BancoCentralClientCall
     ) :
     DeleteKeyGrpcServiceGrpc.DeleteKeyGrpcServiceImplBase() {
 
-    @Transactional
+
     override fun delete(
         request: DeleteKeyGrpcRequest,
         responseObserver: StreamObserver<DeleteKeyGrpcResponse>
     ) {
 
-        val chaveQueSeraDeletada = pixRepository.findByIdAndClientId(request.pixId, request.clientId)
-            ?: throw KeyNotFoundException("Chave pix não encontrada ou a chave não pertence a esse cliente")
-        pixRepository.deleteById(request.pixId)
+        transactionManager.executeWrite {
+            val chaveQueSeraDeletada = pixRepository.findByIdAndClientId(request.pixId, request.clientId)
+                ?: throw KeyNotFoundException("Chave pix não encontrada ou a chave não pertence a esse cliente")
 
-        bancoCentralClientCall.deleteKeyPixBCB(chaveQueSeraDeletada)
+
+            pixRepository.deleteById(request.pixId)
+
+            bancoCentralClientCall.deleteKeyPixBCB(chaveQueSeraDeletada)
+        }
 
         responseObserver.onNext(
             DeleteKeyGrpcResponse.newBuilder().setClientId(request.clientId).setPixId(request.pixId).build()

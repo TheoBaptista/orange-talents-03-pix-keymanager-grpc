@@ -42,9 +42,9 @@ class BancoCentralClientCall(@Inject val bancoCentralClient: BancoCentralClient)
             if (response.status().equals(HttpStatus.NOT_FOUND)) {
                 throw KeyNotFoundException("Chave pix não encontrada!")
             }
-            return response.body().toModel()
+            return response.body()?.toModel() ?: throw IllegalArgumentException("Erro ao consultar o Banco Central do Brasil")
         } catch (e: HttpClientResponseException) {
-            throw IllegalArgumentException("Erro ao consultar o Banco Central do Brasil")
+            throw IllegalStateException("Erro ao consultar o Banco Central do Brasil")
         }
     }
 }
